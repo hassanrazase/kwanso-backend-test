@@ -1,0 +1,19 @@
+{
+  "name": "kwanso-backend-test",
+  "version": "1.0.0",
+  "description": "test for kwanso",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc",
+    "start": "npm run tsc && node build/index.js"
+  },
+  "author": "Hassan Raza",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.11",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "typescript": "^4.1.5"
+  }
+}
