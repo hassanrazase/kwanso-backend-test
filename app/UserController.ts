@@ -1,22 +1,30 @@
-const jwt = require('jsonwebtoken');
+import express, { Router } from 'express';
+import * as jwt from 'jsonwebtoken';
+import { User } from './models/User';
+import { Task } from './models/Task';
+import { RegisterResponse } from './types/responses/RegisterResponse';
+import { AuthUserResponse } from './types/responses/AuthUserResponse';
+import { TaskListResponse } from './types/responses/TaskListResponse';
+import { LoginResponse } from './types/responses/LoginResponse';
+import { TaskResponse } from './types/responses/TaskResponse';
+import { Response } from './types/responses/Response';
 
 
-
-export default class UserController {
+export class UserController {
 
     static userAutoIncrementId: number = 0;
     static taskAutoIncrementId: number = 0;
 
-    static users: { id: number, email: string, password: string }[] = [];
-    static tasks: { id: number, name: string, userId: number }[] = [];
+    static users: User[] = [];
+    static tasks: Task[] = [];
 
 
     constructor() { }
 
 
-    register(req: any, res: any, next: any): void {
+    register(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        let user: any = {
+        let user: User = {
             id: ++UserController.userAutoIncrementId,
             email: req.body.email,
             password: req.body.password,
@@ -24,7 +32,7 @@ export default class UserController {
 
         UserController.users.push(user);
 
-        let userData = {
+        let userData: RegisterResponse = {
             id: user.id,
             email: user.email,
         };
@@ -33,13 +41,13 @@ export default class UserController {
     }
 
 
-    login(req: any, res: any, next: any): void {
+    login(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        let user = UserController.users.find(user => user.email == req.body.email && user.password == req.body.password);
+        let user = UserController.users.find((user: User) => user.email == req.body.email && user.password == req.body.password);
 
         if (user) {
 
-            let generatedJwt = jwt.sign(
+            let generatedJwt: string = jwt.sign(
                 {
                     id: user.id,
                     email: user.email,
@@ -51,27 +59,32 @@ export default class UserController {
                 }
             );
 
-            res.json({
+            let userData: LoginResponse = {
                 jwt: generatedJwt
-            });
+            };
+
+            res.json(userData);
         }
         else {
-            res.json({
-                status: 400,
+
+            let response: Response = {
+                code: 400,
                 message: 'User not found',
                 data: null,
-            });
+            };
+
+            res.json(response);
         }
     }
 
 
-    authUser(req: any, res: any, next: any): void {
+    authUser(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        let user = UserController.users.find(user => user.id == req.authUserId);
+        let user = UserController.users.find((user: User) => user.id == req.body.authUserId);
 
         if (user) {
 
-            let userData = {
+            let userData: AuthUserResponse = {
                 id: user.id,
                 email: user.email,
             }
@@ -79,26 +92,29 @@ export default class UserController {
             res.json(userData);
         }
         else {
-            res.json({
-                status: 400,
+
+            let response: Response = {
+                code: 400,
                 message: 'User not found',
                 data: null,
-            });
+            };
+
+            res.json(response);
         }
 
     }
 
-    createTask(req: any, res: any, next: any): void {
+    createTask(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        let task: any = {
+        let task: Task = {
             id: ++UserController.taskAutoIncrementId,
             name: req.body.name,
-            userId: req.authUserId,
+            userId: req.body.authUserId,
         };
 
         UserController.tasks.push(task);
 
-        let taskData = {
+        let taskData: TaskResponse = {
             id: task.id,
             name: task.name,
         };
@@ -107,17 +123,14 @@ export default class UserController {
     }
 
 
-    listTask(req: any, res: any, next: any): void {
+    listTask(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        console.log(UserController.tasks);
-        console.log(req.authUserId);
+        let userTasks = UserController.tasks.filter((task: Task) => task.userId == req.body.authUserId);
 
-        let userTasks = UserController.tasks.filter(task => task.userId == req.authUserId);
-
-        res.json({
+        let taskData: TaskListResponse = {
             tasks: userTasks
-        });
+        };
+
+        res.json(taskData);
     }
-
-
 }

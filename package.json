@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
-    "start": "npm run tsc && node build/index.js"
+    "start": "npm run tsc && node build/Index.js"
   },
   "author": "Hassan Raza",
   "license": "ISC",
@@ -15,5 +15,9 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "typescript": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/node": "^14.14.27"
   }
 }

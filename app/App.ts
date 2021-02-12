@@ -1,18 +1,20 @@
-import express from 'express';
-const jwt = require('jsonwebtoken');
+import express, { Router } from 'express';
+import * as jwt from 'jsonwebtoken';
 
-
-import UserController from './UserController';
+import { Response } from './types/responses/Response';
+import { UserController } from './UserController';
 
 class App {
 
-    public express: any;
-    public router: any;
+    public express: express.Application;
+    public router: Router;
     public userController: UserController;
 
     constructor() {
 
         this.express = express();
+        this.router = express.Router()
+
         this.userController = new UserController();
         this.initRoutes();
 
@@ -22,24 +24,23 @@ class App {
 
     public initRoutes(): void {
 
-        this.router = express.Router()
 
-        this.router.post('/register',       this.userController.register);
-        this.router.post('/login',          this.userController.login);
-        this.router.get('/user',            this.authMiddleware, this.userController.authUser);
-        this.router.post('/create-task',    this.authMiddleware, this.userController.createTask);
-        this.router.get('/list-tasks',      this.authMiddleware, this.userController.listTask);
+        this.router.post('/register', this.userController.register);
+        this.router.post('/login', this.userController.login);
+        this.router.get('/user', this.authMiddleware, this.userController.authUser);
+        this.router.post('/create-task', this.authMiddleware, this.userController.createTask);
+        this.router.get('/list-tasks', this.authMiddleware, this.userController.listTask);
 
     }
 
-    public authMiddleware(req: any, res: any, next: any) {
+    public authMiddleware(req: express.Request, res: express.Response, next: express.NextFunction): void {
 
-        let tokenData: any;
-        let token: any;
+        let token: string;
+        let tokenData: Array<string>;
+        let response: Response = { code: 400, message: null, data: null };
 
-        let response: { code: number, message: any, data: any } = { code: 400, message: null, data: null };
 
-        let bearerToken = req.get('Authorization');
+        let bearerToken: (string | undefined) = req.get('Authorization');
 
         if (bearerToken) {
 
@@ -49,9 +50,9 @@ class App {
 
                 token = tokenData[1];
 
-                jwt.verify(token, 'tDWNCSMc6WJv5P4WGpM4', function (error: any, decodedData: any) {
+                jwt.verify(token, 'tDWNCSMc6WJv5P4WGpM4', (error: jwt.JsonWebTokenError | jwt.NotBeforeError | jwt.TokenExpiredError | null, decodedData: any | undefined) => {
                     if (error === null) {
-                        req.authUserId = decodedData.id;
+                        req.body.authUserId = decodedData.id;
                         next();
                     } else {
                         response.message = 'Token is malformed or expired';
